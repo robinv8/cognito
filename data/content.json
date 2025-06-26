@@ -1,26 +1,6 @@
 [
   {
     "id": 1,
-    "title": "Tailwind CSS 官方文档",
-    "url": "https://tailwindcss.com/docs",
-    "description": "一个功能类优先的 CSS 框架，用于快速构建现代化的用户界面。包含完整的组件库和设计系统。",
-    "category": "tech",
-    "tags": ["CSS", "框架", "前端"],
-    "dateAdded": "2024-12-15",
-    "favorite": false
-  },
-  {
-    "id": 2,
-    "title": "Dribbble 设计灵感",
-    "url": "https://dribbble.com",
-    "description": "全球设计师社区，提供高质量的设计作品展示和灵感来源，涵盖UI/UX、插画、品牌设计等。",
-    "category": "design",
-    "tags": ["设计", "UI/UX", "灵感"],
-    "dateAdded": "2024-12-14",
-    "favorite": false
-  },
-  {
-    "id": 3,
     "title": "从想法到产品：可视化指南",
     "url": "./From-Idea-to-Product.html",
     "description": "详细的产品开发流程指南，包含五个关键阶段的可视化展示和数据分析。",
@@ -28,25 +8,5 @@
     "tags": ["产品开发", "流程", "可视化"],
     "dateAdded": "2024-12-26",
     "favorite": true
-  },
-  {
-    "id": 4,
-    "title": "MDN Web 文档",
-    "url": "https://developer.mozilla.org",
-    "description": "权威的Web技术文档，涵盖HTML、CSS、JavaScript等前端技术的详细说明和最佳实践。",
-    "category": "tech",
-    "tags": ["Web", "HTML", "CSS", "JavaScript"],
-    "dateAdded": "2024-12-13",
-    "favorite": false
-  },
-  {
-    "id": 5,
-    "title": "GitHub 使用指南",
-    "url": "https://github.com",
-    "description": "版本控制和协作开发平台的完整使用教程，包含Git基础、分支管理、开源贡献等内容。",
-    "category": "learning",
-    "tags": ["Git", "版本控制", "开发"],
-    "dateAdded": "2024-12-12",
-    "favorite": false
   }
 ]
