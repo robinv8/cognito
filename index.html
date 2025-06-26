@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognito - 专属知识宝库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        }
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .content-item:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        .search-highlight {
+            background-color: #fef3c7;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                transform: translateX(-100%);
+            }
+            .sidebar-mobile.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-blue-600 text-white p-2 rounded-lg shadow-lg">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar-mobile fixed left-0 top-0 w-80 h-full bg-white shadow-xl z-40 overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-brain text-blue-600 mr-2"></i>
+                    Cognito
+                </h1>
+                <button id="close-sidebar" class="md:hidden text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">专属知识宝库</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="p-4 border-b border-gray-200">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="search-input"
+                    placeholder="搜索知识库..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="p-4">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">分类</h3>
+            <div class="space-y-2" id="categories">
+                <button class="category-btn w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors active" data-category="all">
+                    <i class="fas fa-globe mr-2 text-blue-500"></i>
+                    全部 <span class="float-right text-sm text-gray-500" id="count-all">5</span>
+                </button>
+                <button class="category-btn w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors" data-category="tech">
+                    <i class="fas fa-code mr-2 text-green-500"></i>
+                    技术文档 <span class="float-right text-sm text-gray-500" id="count-tech">2</span>
+                </button>
+                <button class="category-btn w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors" data-category="design">
+                    <i class="fas fa-paint-brush mr-2 text-purple-500"></i>
+                    设计资源 <span class="float-right text-sm text-gray-500" id="count-design">1</span>
+                </button>
+                <button class="category-btn w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors" data-category="learning">
+                    <i class="fas fa-graduation-cap mr-2 text-yellow-500"></i>
+                    学习资料 <span class="float-right text-sm text-gray-500" id="count-learning">2</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Add New Content Button -->
+        <div class="p-4 border-t border-gray-200">
+            <button id="add-content-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>
+                添加内容
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="md:ml-80 min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="page-title">全部内容</h2>
+                    <p class="text-gray-600 mt-1" id="page-subtitle">探索您的知识宝库</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700" title="网格视图">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700" title="列表视图">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700" title="设置">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Grid -->
+        <main class="p-6">
+            <div id="content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Content will be loaded dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-12">
+                <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-500 mb-2">未找到匹配内容</h3>
+                <p class="text-gray-400">尝试调整搜索关键词或分类筛选</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Content Modal -->
+    <div id="add-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">添加新内容</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="add-content-form">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">标题</label>
+                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="输入内容标题">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">链接</label>
+                        <input type="url" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="https://example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                        <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" rows="3" placeholder="简短描述这个内容"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">分类</label>
+                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                            <option value="tech">技术文档</option>
+                            <option value="design">设计资源</option>
+                            <option value="learning">学习资料</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" id="cancel-add" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        取消
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        添加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global data
+        let contentData = [];
+        let filteredData = [];
+
+        // Load content data
+        async function loadContent() {
+            try {
+                const response = await fetch('./data/content.json');
+                contentData = await response.json();
+                filteredData = [...contentData];
+                renderContent();
+                updateCategoryCounts();
+            } catch (error) {
+                console.log('Using fallback data');
+                // Fallback data if JSON file is not available
+                contentData = [
+                    {
+                        id: 1,
+                        title: "Tailwind CSS 官方文档",
+                        url: "https://tailwindcss.com/docs",
+                        description: "一个功能类优先的 CSS 框架，用于快速构建现代化的用户界面。包含完整的组件库和设计系统。",
+                        category: "tech",
+                        tags: ["CSS", "框架", "前端"],
+                        dateAdded: "2024-12-15",
+                        favorite: false
+                    },
+                    {
+                        id: 2,
+                        title: "Dribbble 设计灵感",
+                        url: "https://dribbble.com",
+                        description: "全球设计师社区，提供高质量的设计作品展示和灵感来源，涵盖UI/UX、插画、品牌设计等。",
+                        category: "design",
+                        tags: ["设计", "UI/UX", "灵感"],
+                        dateAdded: "2024-12-14",
+                        favorite: false
+                    },
+                    {
+                        id: 3,
+                        title: "从想法到产品：可视化指南",
+                        url: "./From-Idea-to-Product.html",
+                        description: "详细的产品开发流程指南，包含五个关键阶段的可视化展示和数据分析。",
+                        category: "learning",
+                        tags: ["产品开发", "流程", "可视化"],
+                        dateAdded: "2024-12-26",
+                        favorite: true
+                    },
+                    {
+                        id: 4,
+                        title: "MDN Web 文档",
+                        url: "https://developer.mozilla.org",
+                        description: "权威的Web技术文档，涵盖HTML、CSS、JavaScript等前端技术的详细说明和最佳实践。",
+                        category: "tech",
+                        tags: ["Web", "HTML", "CSS", "JavaScript"],
+                        dateAdded: "2024-12-13",
+                        favorite: false
+                    },
+                    {
+                        id: 5,
+                        title: "GitHub 使用指南",
+                        url: "https://github.com",
+                        description: "版本控制和协作开发平台的完整使用教程，包含Git基础、分支管理、开源贡献等内容。",
+                        category: "learning",
+                        tags: ["Git", "版本控制", "开发"],
+                        dateAdded: "2024-12-12",
+                        favorite: false
+                    }
+                ];
+                filteredData = [...contentData];
+                renderContent();
+                updateCategoryCounts();
+            }
+        }
+
+        // Render content items
+        function renderContent() {
+            const contentGrid = document.getElementById('content-grid');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filteredData.length === 0) {
+                contentGrid.style.display = 'none';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            contentGrid.style.display = 'grid';
+            emptyState.classList.add('hidden');
+
+            const categoryConfig = {
+                tech: { name: '技术文档', color: 'green' },
+                design: { name: '设计资源', color: 'purple' },
+                learning: { name: '学习资料', color: 'yellow' }
+            };
+
+            contentGrid.innerHTML = filteredData.map(item => {
+                const category = categoryConfig[item.category];
+                const favoriteIcon = item.favorite ? 'fas fa-bookmark text-blue-500' : 'fas fa-bookmark text-gray-400 hover:text-gray-600';
+                const isToday = item.dateAdded === new Date().toISOString().split('T')[0];
+                const displayDate = isToday ? '今天' : item.dateAdded;
+
+                return `
+                    <div class="content-item bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200" data-category="${item.category}" data-id="${item.id}">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-800 line-clamp-2 mb-2">
+                                        <a href="${item.url}" target="_blank" class="hover:text-blue-600">
+                                            ${item.title}
+                                        </a>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 line-clamp-3">
+                                        ${item.description}
+                                    </p>
+                                </div>
+                                <button class="favorite-btn ml-2" data-id="${item.id}">
+                                    <i class="${favoriteIcon}"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span class="bg-${category.color}-100 text-${category.color}-800 px-2 py-1 rounded-full">${category.name}</span>
+                                <span>${displayDate}</span>
+                            </div>
+                            <div class="mt-3 flex items-center space-x-2">
+                                <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="window.open('${item.url}', '_blank')">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    访问
+                                </button>
+                                <button class="text-gray-500 hover:text-gray-700 text-sm edit-btn" data-id="${item.id}">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    编辑
+                                </button>
+                                <button class="text-red-500 hover:text-red-700 text-sm delete-btn" data-id="${item.id}">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners for favorite buttons
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    toggleFavorite(parseInt(btn.dataset.id));
+                });
+            });
+
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    deleteContent(parseInt(btn.dataset.id));
+                });
+            });
+        }
+
+        // Update category counts
+        function updateCategoryCounts() {
+            const counts = {
+                all: contentData.length,
+                tech: contentData.filter(item => item.category === 'tech').length,
+                design: contentData.filter(item => item.category === 'design').length,
+                learning: contentData.filter(item => item.category === 'learning').length
+            };
+
+            Object.keys(counts).forEach(category => {
+                const countElement = document.getElementById(`count-${category}`);
+                if (countElement) {
+                    countElement.textContent = counts[category];
+                }
+            });
+        }
+
+        // Toggle favorite status
+        function toggleFavorite(id) {
+            const item = contentData.find(item => item.id === id);
+            if (item) {
+                item.favorite = !item.favorite;
+                renderContent();
+                // In a real app, this would save to backend/localStorage
+                console.log('Toggled favorite for:', item.title);
+            }
+        }
+
+        // Delete content
+        function deleteContent(id) {
+            if (confirm('确定要删除这个内容吗？')) {
+                contentData = contentData.filter(item => item.id !== id);
+                filteredData = filteredData.filter(item => item.id !== id);
+                renderContent();
+                updateCategoryCounts();
+                updatePageInfo();
+                console.log('Deleted content with id:', id);
+            }
+        }
+
+        // Update page info
+        function updatePageInfo() {
+            const pageTitle = document.getElementById('page-title');
+            const pageSubtitle = document.getElementById('page-subtitle');
+            const activeCategory = document.querySelector('.category-btn.active');
+            
+            if (activeCategory) {
+                const category = activeCategory.dataset.category;
+                const categoryNames = {
+                    'all': '全部内容',
+                    'tech': '技术文档',
+                    'design': '设计资源',
+                    'learning': '学习资料'
+                };
+                pageTitle.textContent = categoryNames[category];
+                pageSubtitle.textContent = `找到 ${filteredData.length} 项内容`;
+            }
+        }
+
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('close-sidebar');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+
+        // Category filtering
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const pageTitle = document.getElementById('page-title');
+        const pageSubtitle = document.getElementById('page-subtitle');
+
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.dataset.category;
+                
+                // Update active state
+                categoryBtns.forEach(b => b.classList.remove('active', 'bg-blue-100', 'text-blue-700'));
+                btn.classList.add('active', 'bg-blue-100', 'text-blue-700');
+
+                // Filter content
+                if (category === 'all') {
+                    filteredData = [...contentData];
+                } else {
+                    filteredData = contentData.filter(item => item.category === category);
+                }
+
+                renderContent();
+                updatePageInfo();
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const activeCategory = document.querySelector('.category-btn.active')?.dataset.category;
+
+            if (searchTerm) {
+                // Filter by search term
+                filteredData = contentData.filter(item => {
+                    const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
+                                        item.description.toLowerCase().includes(searchTerm) ||
+                                        item.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+                    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+                    return matchesSearch && matchesCategory;
+                });
+
+                pageTitle.textContent = '搜索结果';
+                pageSubtitle.textContent = `找到 ${filteredData.length} 项匹配内容`;
+            } else {
+                // Reset to category filter
+                if (activeCategory === 'all') {
+                    filteredData = [...contentData];
+                } else {
+                    filteredData = contentData.filter(item => item.category === activeCategory);
+                }
+                updatePageInfo();
+            }
+
+            renderContent();
+        });
+
+        // Modal functionality
+        const addContentBtn = document.getElementById('add-content-btn');
+        const addModal = document.getElementById('add-modal');
+        const closeModal = document.getElementById('close-modal');
+        const cancelAdd = document.getElementById('cancel-add');
+        const addForm = document.getElementById('add-content-form');
+
+        addContentBtn.addEventListener('click', () => {
+            addModal.classList.remove('hidden');
+        });
+
+        closeModal.addEventListener('click', () => {
+            addModal.classList.add('hidden');
+        });
+
+        cancelAdd.addEventListener('click', () => {
+            addModal.classList.add('hidden');
+        });
+
+        // Handle form submission
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(addForm);
+            const newItem = {
+                id: Math.max(...contentData.map(item => item.id)) + 1,
+                title: addForm.querySelector('input[type="text"]').value,
+                url: addForm.querySelector('input[type="url"]').value,
+                description: addForm.querySelector('textarea').value,
+                category: addForm.querySelector('select').value,
+                tags: [],
+                dateAdded: new Date().toISOString().split('T')[0],
+                favorite: false
+            };
+
+            contentData.push(newItem);
+            filteredData = [...contentData];
+            renderContent();
+            updateCategoryCounts();
+            updatePageInfo();
+            
+            addForm.reset();
+            addModal.classList.add('hidden');
+            
+            console.log('Added new content:', newItem);
+        });
+
+        // Close modal when clicking outside
+        addModal.addEventListener('click', (e) => {
+            if (e.target === addModal) {
+                addModal.classList.add('hidden');
+            }
+        });
+
+        // Close sidebar when clicking outside (mobile)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 768) {
+                if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContent();
+        });
+    </script>
+</body>
+</html>
