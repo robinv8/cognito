@@ -44,5 +44,3 @@
 
 * GitHub Issues (在此仓库创建 Issue)  
 * robin@rnode.me
-
-**Cognito** \- 构建你的专属知识宝库
