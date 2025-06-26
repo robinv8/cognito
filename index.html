@@ -92,13 +92,7 @@
             </div>
         </div>
 
-        <!-- Add New Content Button -->
-        <div class="p-4 border-t border-gray-200">
-            <button id="add-content-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                <i class="fas fa-plus mr-2"></i>
-                添加内容
-            </button>
-        </div>
+
     </div>
 
     <!-- Main Content -->
@@ -139,49 +133,7 @@
         </main>
     </div>
 
-    <!-- Add Content Modal -->
-    <div id="add-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg max-w-md w-full p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">添加新内容</h3>
-                <button id="close-modal" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="add-content-form">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">标题</label>
-                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="输入内容标题">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">链接</label>
-                        <input type="url" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="https://example.com">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                        <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" rows="3" placeholder="简短描述这个内容"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">分类</label>
-                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                            <option value="tech">技术文档</option>
-                            <option value="design">设计资源</option>
-                            <option value="learning">学习资料</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex space-x-3 mt-6">
-                    <button type="button" id="cancel-add" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                        取消
-                    </button>
-                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        添加
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <script>
         // Global data
@@ -305,18 +257,10 @@
                                 <span class="bg-${category.color}-100 text-${category.color}-800 px-2 py-1 rounded-full">${category.name}</span>
                                 <span>${displayDate}</span>
                             </div>
-                            <div class="mt-3 flex items-center space-x-2">
+                            <div class="mt-3">
                                 <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="window.open('${item.url}', '_blank')">
                                     <i class="fas fa-external-link-alt mr-1"></i>
-                                    访问
-                                </button>
-                                <button class="text-gray-500 hover:text-gray-700 text-sm edit-btn" data-id="${item.id}">
-                                    <i class="fas fa-edit mr-1"></i>
-                                    编辑
-                                </button>
-                                <button class="text-red-500 hover:text-red-700 text-sm delete-btn" data-id="${item.id}">
-                                    <i class="fas fa-trash mr-1"></i>
-                                    删除
+                                    访问链接
                                 </button>
                             </div>
                         </div>
@@ -329,14 +273,6 @@
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     toggleFavorite(parseInt(btn.dataset.id));
-                });
-            });
-
-            // Add event listeners for delete buttons
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    deleteContent(parseInt(btn.dataset.id));
                 });
             });
         }
@@ -366,18 +302,6 @@
                 renderContent();
                 // In a real app, this would save to backend/localStorage
                 console.log('Toggled favorite for:', item.title);
-            }
-        }
-
-        // Delete content
-        function deleteContent(id) {
-            if (confirm('确定要删除这个内容吗？')) {
-                contentData = contentData.filter(item => item.id !== id);
-                filteredData = filteredData.filter(item => item.id !== id);
-                renderContent();
-                updateCategoryCounts();
-                updatePageInfo();
-                console.log('Deleted content with id:', id);
             }
         }
 
@@ -412,8 +336,6 @@
         closeSidebar.addEventListener('click', () => {
             sidebar.classList.remove('open');
         });
-
-        // Category filtering
         const categoryBtns = document.querySelectorAll('.category-btn');
         const pageTitle = document.getElementById('page-title');
         const pageSubtitle = document.getElementById('page-subtitle');
@@ -467,59 +389,6 @@
             }
 
             renderContent();
-        });
-
-        // Modal functionality
-        const addContentBtn = document.getElementById('add-content-btn');
-        const addModal = document.getElementById('add-modal');
-        const closeModal = document.getElementById('close-modal');
-        const cancelAdd = document.getElementById('cancel-add');
-        const addForm = document.getElementById('add-content-form');
-
-        addContentBtn.addEventListener('click', () => {
-            addModal.classList.remove('hidden');
-        });
-
-        closeModal.addEventListener('click', () => {
-            addModal.classList.add('hidden');
-        });
-
-        cancelAdd.addEventListener('click', () => {
-            addModal.classList.add('hidden');
-        });
-
-        // Handle form submission
-        addForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(addForm);
-            const newItem = {
-                id: Math.max(...contentData.map(item => item.id)) + 1,
-                title: addForm.querySelector('input[type="text"]').value,
-                url: addForm.querySelector('input[type="url"]').value,
-                description: addForm.querySelector('textarea').value,
-                category: addForm.querySelector('select').value,
-                tags: [],
-                dateAdded: new Date().toISOString().split('T')[0],
-                favorite: false
-            };
-
-            contentData.push(newItem);
-            filteredData = [...contentData];
-            renderContent();
-            updateCategoryCounts();
-            updatePageInfo();
-            
-            addForm.reset();
-            addModal.classList.add('hidden');
-            
-            console.log('Added new content:', newItem);
-        });
-
-        // Close modal when clicking outside
-        addModal.addEventListener('click', (e) => {
-            if (e.target === addModal) {
-                addModal.classList.add('hidden');
-            }
         });
 
         // Close sidebar when clicking outside (mobile)
