@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式 Vue 学习指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Beige & Slate -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard with a fixed sidebar for navigation and a main content area. This design was chosen to transform the linear text document into an interactive learning path. Users can either follow the guide sequentially or use the sidebar to jump directly to specific topics. Key interactions include a checklist-style progress tracker for each learning item and a dynamic donut chart that visualizes overall completion. This structure enhances usability by providing clear navigation, promoting user engagement through interaction, and offering immediate feedback on progress, which is highly motivating for a learning tool. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Learning Stages & Topics -> Goal: Organize/Navigate -> Viz/Presentation: Sticky Sidebar Navigation Menu & Main Content Sections -> Interaction: Clicking a link smoothly scrolls to the corresponding section and highlights the active link. Justification: Provides clear, persistent navigation without losing context.
+        - Report Info: Each learning point -> Goal: Engage/Inform -> Viz/Presentation: Interactive Checklist (HTML checkbox) -> Interaction: Users can check/uncheck items. This updates the progress chart. Justification: Adds interactivity and allows users to track their personal learning progress.
+        - Report Info: Overall Learning Progress -> Goal: Inform/Motivate -> Viz/Presentation: Donut Chart (Chart.js/Canvas) -> Interaction: The chart dynamically updates when a checklist item's state changes. Justification: Provides an immediate, rewarding visual summary of the user's effort.
+        - Report Info: Code-related terms (`v-for`, etc.) -> Goal: Inform -> Viz/Presentation: Styled Code Blocks (HTML `<code>` with Tailwind) -> Interaction: None. Justification: Visually separates code from descriptive text for better readability.
+        - Report Info: Learning Path Structure -> Goal: Organize -> Viz/Presentation: Timeline-like visual elements in the sidebar -> Interaction: Highlights the current section. Justification: Visually reinforces the user's position within the learning journey.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .active-nav {
+            color: #10B981;
+            background-color: #F0FDF4;
+            border-right: 3px solid #10B981;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 150px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 150px;
+            max-height: 150px;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        code {
+            background-color: #F3F4F6;
+            color: #4B5563;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-72 bg-white/80 backdrop-blur-sm shadow-lg fixed top-0 left-0 h-full flex flex-col p-4 border-r border-slate-200">
+            <h1 class="text-2xl font-bold text-slate-900 mb-2 text-center">Vue.js 指南</h1>
+            <p class="text-xs text-slate-500 mb-4 text-center">一个交互式学习路线图</p>
+
+            <div class="chart-container mb-4">
+                <canvas id="progressChart"></canvas>
+            </div>
+             <p id="progressText" class="text-center text-sm text-slate-600 mb-6 font-semibold">开始学习吧！</p>
+            
+            <nav id="navigationMenu" class="flex-grow overflow-y-auto"></nav>
+        </aside>
+
+        <main class="pl-72 w-full p-4 md:p-8">
+            <div id="mainContent" class="max-w-4xl mx-auto">
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const guideData = [
+                {
+                    stage: "阶段一：初识 Vue (基础)",
+                    intro: "这个阶段的目标是让你了解 Vue 是什么，以及如何开始使用它。这是打下坚实基础的关键一步，你将学习到 Vue 最核心的理念和最常用的语法。",
+                    topics: [
+                        { title: "了解 JavaScript 基础", content: "在学习 Vue 之前，确保你对 JavaScript 的基本概念有扎实的理解，包括变量、数据类型、函数、数组、对象、条件语句、循环以及 DOM 操作。<br><strong>推荐资源</strong>: MDN Web 文档、FreeCodeCamp JavaScript 课程。" },
+                        { title: "Vue 是什么", content: "理解 Vue 的核心理念，例如 <strong>渐进式框架</strong> 的含义。了解 Vue 相对于其他框架（如 React 或 Angular）的优势。<br><strong>推荐资源</strong>: Vue 官方文档 - 简介 (Introduction)。" },
+                        { title: "安装 Vue", content: "学习如何通过 CDN 引入 Vue，以及通过 Vue CLI 创建一个项目。Vue CLI 是一个官方工具，用于快速搭建 Vue 项目。<br><strong>推荐资源</strong>: Vue 官方文档 - 安装 (Installation)。" },
+                        { title: "Vue 实例与数据绑定", content: "理解 <code>new Vue()</code> 的作用，这是 Vue 应用的根实例。学习<strong>声明式渲染</strong>和<strong>数据绑定</strong> (<code>{{ }}</code>) 的概念。<br><strong>推荐资源</strong>: Vue 官方文档 - 基础 (Essentials) - 创建一个 Vue 应用。" },
+                        { title: "模板语法", content: "掌握 Vue 的模板语法，包括：文本插值 <code>{{ }}</code>, 指令例如 <code>v-bind</code> (缩写 <code>:</code>) 和 <code>v-on</code> (缩写 <code>@</code>), 条件渲染 <code>v-if</code>/<code>v-show</code>, 以及列表渲染 <code>v-for</code>。<br><strong>推荐资源</strong>: Vue 官方文档 - 模板语法 (Template Syntax)。" },
+                        { title: "计算属性与侦听器", content: "理解计算属性如何根据响应式依赖缓存结果，以及它们在处理复杂逻辑时的优势。了解侦听器，它们允许你响应数据的变化执行异步或开销较大的操作。<br><strong>推荐资源</strong>: Vue 官方文档 - 计算属性和侦听器 (Computed Properties and Watchers)。" }
+                    ]
+                },
+                {
+                    stage: "阶段二：深入 Vue (组件化)",
+                    intro: "组件化是 Vue 的灵魂。在这个阶段，你将深入了解如何构建可复用、结构清晰的组件，并学习组件之间的通信方式以及路由和状态管理等构建大型应用的核心知识。",
+                    topics: [
+                        { title: "组件基础", content: "掌握<strong>组件</strong>的概念，它们是可复用、自包含的代码块。学习如何<strong>注册组件</strong>（全局和局部），并理解组件的数据传递：通过 <strong>Props</strong> 从父到子，以及通过<strong>自定义事件</strong> (<code>this.$emit()</code>) 从子到父。<br><strong>推荐资源</strong>: Vue 官方文档 - 组件基础 (Components Basics)。" },
+                        { title: "组件插槽 (Slots)", content: "学习如何使用插槽来分发内容，使组件更具可扩展性和灵活性。<br><strong>推荐资源</strong>: Vue 官方文档 - 插槽 (Slots)。" },
+                        { title: "生命周期钩子", content: "理解 Vue 实例和组件的生命周期，以及每个阶段可以执行的操作，例如 <code>created</code>, <code>mounted</code>, <code>updated</code>, <code>unmounted</code>。<br><strong>推荐资源</strong>: Vue 官方文档 - 生命周期钩子 (Lifecycle Hooks)。" },
+                        { title: "表单输入绑定", content: "学习 <code>v-model</code> 如何在表单元素上创建双向数据绑定，极大地简化表单处理。<br><strong>推荐资源</strong>: Vue 官方文档 - 表单输入绑定 (Form Input Bindings)。" },
+                        { title: "路由 (Vue Router)", content: "在单页应用中，路由是必不可少的。学习如何使用官方的 Vue Router 来管理页面导航，包括路由配置、路由参数、嵌套路由和编程式导航。<br><strong>推荐资源</strong>: Vue Router 官方文档。" },
+                        { title: "状态管理 (Vuex / Pinia)", content: "对于大型应用，学习使用官方的状态管理库来集中管理所有组件的状态。<strong>Pinia</strong> 是 Vue 3 的推荐选择，它更轻量、更简单。<br><strong>推荐资源</strong>: Vuex 官方文档 或 Pinia 官方文档。" }
+                    ]
+                },
+                {
+                    stage: "阶段三：进阶与实战 (深入优化)",
+                    intro: "掌握了核心概念之后，是时候深入探索 Vue 的高级特性了。本阶段将介绍 Vue 3 的 Composition API、强大的工具链、性能优化技巧以及如何测试和部署你的应用。",
+                    topics: [
+                        { title: "组合式 API", content: "Vue 3 引入了 Composition API，它提供了更灵活、更强大的方式来组织和复用组件逻辑。学习 <code>ref</code>, <code>reactive</code>, <code>computed</code>, <code>watch</code>, <code>setup</code> 等。<br><strong>推荐资源</strong>: Vue 官方文档 - 组合式 API (Composition API)。" },
+                        { title: "Vue 工具链", content: "深入了解 Vue CLI，包括其配置、插件和构建过程。了解 <strong>Vite</strong> (推荐用于 Vue 3 项目)，这是一个下一代前端工具，提供极速的开发体验。<br><strong>推荐资源</strong>: Vue CLI 官方文档 或 Vite 官方文档。" },
+                        { title: "性能优化", content: "学习 Vue 应用的性能优化技巧，例如<strong>路由懒加载</strong>、<strong>组件懒加载</strong>、<strong>虚拟滚动</strong>、<strong>长列表优化</strong>等。<br><strong>推荐资源</strong>: Vue 官方文档 - 性能优化 (Performance)。" },
+                        { title: "测试", content: "学习如何对 Vue 组件进行<strong>单元测试</strong>（例如使用 Vitest 或 Jest）和<strong>端到端测试</strong>（例如使用 Cypress 或 Playwright）。<br><strong>推荐资源</strong>: Vue 官方文档 - 测试 (Testing)。" },
+                        { title: "部署", content: "了解如何将你的 Vue 应用部署到不同的平台，例如 Netlify, Vercel, GitHub Pages, Nginx 等。" },
+                        { title: "UI 组件库", content: "了解并尝试使用流行的 Vue UI 组件库，例如 Element Plus, Ant Design Vue, Vuetify 等，它们可以帮助你快速构建美观的用户界面。" }
+                    ]
+                },
+                {
+                    stage: "阶段四：实战与社区",
+                    intro: "理论知识很重要，但实践才是学习的关键。现在，是时候将所学知识付诸实践，并融入充满活力的 Vue 社区了。",
+                    topics: [
+                        { title: "构建个人项目", content: "尝试构建一个完整的 Vue 应用，例如：一个待办事项列表 (ToDo List), 一个简单的电商网站, 一个博客系统, 或一个天气应用。从简单开始，逐步增加复杂度。<br><strong>建议</strong>: 将你的项目部署并分享！" },
+                        { title: "阅读开源项目", content: "阅读 GitHub 上优秀的 Vue 开源项目代码，学习最佳实践和设计模式。" },
+                        { title: "参与社区", content: "加入 Vue 社区（例如 Vue 论坛、Discord、Stack Overflow），提问、回答问题，与其他开发者交流。关注 Vue 相关的技术博客和新闻。" },
+                        { title: "持续学习", content: "前端技术日新月异，保持学习的热情，持续关注 Vue 生态的最新动态。" }
+                    ]
+                }
+            ];
+
+            const navigationMenu = document.getElementById('navigationMenu');
+            const mainContent = document.getElementById('mainContent');
+            let totalTopics = 0;
+            let completedTopics = 0;
+
+            guideData.forEach((section, sectionIndex) => {
+                const sectionId = `section-${sectionIndex}`;
+                
+                const navSection = document.createElement('div');
+                navSection.innerHTML = `<h3 class="text-lg font-bold text-slate-700 mt-6 mb-2 px-4">${section.stage}</h3>`;
+                navigationMenu.appendChild(navSection);
+
+                const topicList = document.createElement('ul');
+                topicList.className = 'space-y-1';
+
+                const contentSection = document.createElement('div');
+                contentSection.id = sectionId;
+                contentSection.className = 'pt-8';
+                contentSection.innerHTML = `
+                    <h2 class="text-4xl font-extrabold text-slate-800 mb-4">${section.stage}</h2>
+                    <p class="text-lg text-slate-600 mb-10 border-l-4 border-emerald-400 pl-4">${section.intro}</p>
+                `;
+
+                section.topics.forEach((topic, topicIndex) => {
+                    const topicId = `topic-${sectionIndex}-${topicIndex}`;
+                    totalTopics++;
+
+                    const navItem = document.createElement('li');
+                    navItem.innerHTML = `<a href="#${topicId}" class="block text-slate-600 hover:bg-slate-100 py-2 px-4 rounded-md transition-colors duration-200">${topic.title}</a>`;
+                    topicList.appendChild(navItem);
+                    
+                    const topicContent = document.createElement('div');
+                    topicContent.id = topicId;
+                    topicContent.className = 'mb-12 py-4';
+                    topicContent.innerHTML = `
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-2xl font-bold text-slate-800">${topic.title}</h3>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" data-topic-id="${topicId}" class="h-5 w-5 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500">
+                                <span class="ml-2 text-sm text-slate-500">完成</span>
+                            </label>
+                        </div>
+                        <div class="prose max-w-none text-slate-700 leading-relaxed">${topic.content}</div>
+                    `;
+                    contentSection.appendChild(topicContent);
+                });
+                
+                navigationMenu.appendChild(topicList);
+                mainContent.appendChild(contentSection);
+            });
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已完成', '未完成'],
+                    datasets: [{
+                        data: [0, totalTopics],
+                        backgroundColor: ['#10B981', '#E5E7EB'],
+                        borderColor: ['#ffffff', '#ffffff'],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+            
+            const progressText = document.getElementById('progressText');
+
+            function updateProgress() {
+                completedTopics = document.querySelectorAll('input[type="checkbox"]:checked').length;
+                progressChart.data.datasets[0].data = [completedTopics, totalTopics - completedTopics];
+                progressChart.update();
+
+                const percentage = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+                progressText.textContent = `已完成 ${percentage}%`;
+            }
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateProgress);
+            });
+
+            function updateActiveNav() {
+                let currentSectionId = '';
+                const sections = document.querySelectorAll('[id^="topic-"]');
+                const fromTop = window.scrollY + 150;
+
+                sections.forEach(section => {
+                    if (section.offsetTop <= fromTop) {
+                        currentSectionId = section.id;
+                    }
+                });
+                
+                document.querySelectorAll('#navigationMenu a').forEach(a => {
+                    a.classList.remove('active-nav', 'font-bold');
+                    if (a.getAttribute('href') === `#${currentSectionId}`) {
+                        a.classList.add('active-nav', 'font-bold');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveNav);
+            updateProgress();
+            updateActiveNav();
+        });
+    </script>
+</body>
+</html>

@@ -3,10 +3,30 @@
     "id": 1,
     "title": "从想法到产品：可视化指南",
     "url": "./From-Idea-to-Product.html",
-    "description": "详细的产品开发流程指南，包含五个关键阶段的可视化展示和数据分析。",
+    "description": "详细的产品开发流程指南，包含五个关键阶段的可视化展示和数据分析。使用 Chart.js 实现数据可视化，展示产品开发的完整流程。",
     "category": "learning",
-    "tags": ["产品开发", "流程", "可视化"],
+    "tags": ["产品开发", "流程", "可视化", "Chart.js"],
     "dateAdded": "2024-12-26",
+    "favorite": true
+  },
+  {
+    "id": 2,
+    "title": "交互式 React 学习指南",
+    "url": "./html/交互式 React 学习指南.html",
+    "description": "全面的 React 框架学习教程，包含组件、状态管理、生命周期等核心概念的交互式演示和实践案例。",
+    "category": "learning",
+    "tags": ["React", "JavaScript", "前端框架", "交互式"],
+    "dateAdded": "2025-07-08",
+    "favorite": true
+  },
+  {
+    "id": 3,
+    "title": "交互式 Vue 学习指南",
+    "url": "./html/交互式 Vue 学习指南.html",
+    "description": "深入浅出的 Vue.js 框架教程，涵盖响应式数据、组件通信、路由管理等关键特性的互动学习体验。",
+    "category": "learning",
+    "tags": ["Vue.js", "JavaScript", "前端框架", "交互式"],
+    "dateAdded": "2025-07-08",
     "favorite": true
   }
 ]
